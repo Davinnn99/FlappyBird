@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Ahok</title>
+    <link rel="icon" type="image/x-icon" href="ahok.png">
+</head>
+<body>
+    <canvas id="canvasku" width="500" height="500" style="border: 2px solid black;"></canvas>
+
+    <script>
+        let canvas = document.getElementById('canvasku');
+        let ctx = canvas.getContext('2d');
+
+        // Image Ahoknya
+        let ahok = new Image();
+        ahok.src = "bird.png";
+
+        // Suara saat lompat
+        let sound = new Audio();
+        sound.src = "jump.mp3";
+
+        // Komposisi gambar Ahok
+        let g = 0;
+        let xAhok = 0;
+        let yAhok = canvas.height / 2 + 25;
+        let wAhok = 50;
+        let hAhok = 50;
+
+        let xPipa = canvas.width;
+        let pipaHeight = Math.random() * canvas.height; // Tinggi pipa acak
+        let kecepatanPipa = 3;
+
+        let pipaPassed = false; // Menandakan apakah karakter Ahok sudah melewati pipa
+        let score = 0; // Skor per lewati pipa
+
+        window.addEventListener("keypress", function () {
+            if (event.keyCode == 32) {
+                g = g - 10;
+                sound.pause();
+                sound.currentTime = 1;
+                sound.play();
+            }
+        });
+
+        function generatePipa() {
+            pipaHeight = Math.random() * (canvas.height - 250);
+            xPipa = canvas.width;
+            pipaPassed = false; // Reset status melewati pipa
+        }
+
+        generatePipa();
+
+        function drawScore() {
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "black";
+            ctx.fillText("Score: " + score, 10, 30);
+        }
+
+        window.setInterval(function () {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            g = g + 1;
+            ctx.drawImage(ahok, xAhok, yAhok, wAhok, hAhok);
+            yAhok = yAhok + g;
+
+            if (yAhok >= canvas.height - hAhok) {
+                g = 0;
+                xAhok = 0;
+                yAhok = canvas.height / 2 + 25;
+                wAhok = 50;
+                hAhok = 50;
+                alert("Game Over! Skor Anda: " + score);
+                generatePipa();
+                score = 0;
+            }
+            if (yAhok < 0) {
+                yAhok = 0;
+                g = 0;
+            }
+
+            // Gambar dan cek tabrakan dengan pipa
+            ctx.fillStyle = "green";
+            ctx.fillRect(xPipa, 0, 50, pipaHeight);
+            ctx.strokeRect(xPipa, 0, 50, pipaHeight);
+            ctx.fillStyle = "green";
+            ctx.fillRect(xPipa, pipaHeight + 100, 50, canvas.height - pipaHeight);
+            ctx.strokeRect(xPipa, pipaHeight + 100, 50, canvas.height - pipaHeight);
+
+            if (
+                xAhok + wAhok >= xPipa && xAhok <= xPipa + 50 &&
+                (yAhok <= pipaHeight || yAhok + hAhok >= pipaHeight + 100)
+            ) {
+                alert("Game Over! Skor Anda: " + score);
+                generatePipa();
+                score = 0; // Reset skor saat permainan berakhir
+            }
+
+            xPipa -= kecepatanPipa;
+
+            // Jika karakter Ahok telah melewati pipa, tambahkan skor dan buat pipa baru
+            if (xAhok > xPipa + 50 && !pipaPassed) {
+                pipaPassed = true;
+                score++;
+                generatePipa();
+            }
+
+            drawScore(); // Gambar skor di layar
+        }, 1000 / 30);
+    </script>
+</body>
+</html>
